@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:controls="clr-namespace:LukkyBoost.App.Views.Controls"
              xmlns:vm="clr-namespace:LukkyBoost.App.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:PcDashboardViewModel}"
@@ -13,7 +13,7 @@
         <Grid.RowDefinitions>
             <!-- A) Selector de Perfiles Rápidos (RadioButtons de 56px+) -->
             <RowDefinition Height="Auto" />
-            <!-- B) Grid de Telemetría 2x2 con Gráficos de 140px -->
+            <!-- B) Grid de Telemetría 2x2 con Sparklines Vectoriales (MicroGraphControl) -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -71,160 +71,280 @@
         </UniformGrid>
 
         <!-- =============================================================== -->
-        <!-- B) GRID DE TELEMETRÍA 2x2 (CON ALTURA EXPLÍCITA Height="140")   -->
+        <!-- B) GRID DE TELEMETRÍA 2x2 CON MICROGRAPHCONTROL (SPARKLINES)    -->
         <!-- =============================================================== -->
         <UniformGrid Grid.Row="1" Columns="2" Rows="2" Margin="-8">
 
-            <!-- 1. CPU (Curva Cian #38BDF8) -->
+            <!-- 1. PROCESADOR (CPU) — Trazo #38BDF8, Fondo #082F49 (15% opacidad) -->
             <Border Style="{StaticResource CyberCardStyle}" Margin="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
+                    <!-- Cabecera: PROCESADOR (CPU) + % -->
                     <DockPanel Grid.Row="0">
-                        <TextBlock Text="CPU" FontSize="12" FontWeight="Bold" Foreground="{StaticResource ElectricCyanBrush}" />
-                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="20" FontWeight="ExtraBold" Foreground="{StaticResource ElectricCyanBrush}">
-                            <Run Text="{Binding CpuLoadPercent, Mode=OneWay}" /><Run Text="%" />
+                        <TextBlock Text="PROCESADOR (CPU)"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#38BDF8"
+                                   VerticalAlignment="Center" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="#38BDF8">
+                            <Run Text="{Binding CpuLoadPercent, Mode=OneWay, StringFormat={}{0:0.0}}" /><Run Text="%" />
                         </TextBlock>
                     </DockPanel>
 
+                    <!-- Modelo + Reloj y Temperatura -->
                     <StackPanel Grid.Row="1" Margin="0,4,0,10">
-                        <TextBlock Text="{Binding CpuModel}" FontSize="15" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
-                            <Run Text="{Binding CpuClockMhz, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" />
-                            <Run Text="MHz   •   " />
-                            <Run Text="{Binding CpuTempCelsius, Mode=OneWay}" Foreground="{StaticResource ElectricCyanBrush}" FontWeight="Bold" />
-                            <Run Text="°C" />
+                        <TextBlock Text="{Binding CpuModel}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="#F8FAFC"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontSize="12.5" Foreground="#94A3B8" Margin="0,4,0,0">
+                            <Run Text="{Binding CpuClockMhz, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" />
+                            <Run Text=" MHz   •   Temp: " />
+                            <Run Text="{Binding CpuTempCelsius, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#38BDF8" FontWeight="Bold" />
+                            <Run Text=" °C (" /><Run Text="{Binding CpuTempStatus, Mode=OneWay}" /><Run Text=")" />
                         </TextBlock>
                     </StackPanel>
 
-                    <lvc:CartesianChart Grid.Row="2"
-                                        Height="140"
-                                        VerticalAlignment="Bottom"
-                                        Series="{Binding CpuSeries}"
-                                        XAxes="{Binding HiddenXAxis}"
-                                        YAxes="{Binding PercentageYAxis}"
-                                        TooltipPosition="Hidden" />
+                    <!-- Sparkline Vectorial Nativo (30 puntos, 1.5 px) -->
+                    <controls:MicroGraphControl Grid.Row="2"
+                                                MinHeight="115"
+                                                Values="{Binding CpuHistory}"
+                                                MaxScale="100"
+                                                LineBrush="#38BDF8"
+                                                FillBrush="#26082F49" />
+
+                    <!-- Pie de estadísticas: Mín / Prom / Máx -->
+                    <Grid Grid.Row="3" Margin="2,10,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Left">
+                            <Run Text="Mín: " /><Run Text="{Binding CpuMinPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="1" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center">
+                            <Run Text="Prom: " /><Run Text="{Binding CpuAvgPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#38BDF8" FontWeight="Bold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="2" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Right">
+                            <Run Text="Máx: " /><Run Text="{Binding CpuMaxPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- 2. GPU (Curva Índigo #6366F1) -->
+            <!-- 2. TARJETA GRÁFICA (GPU) — Trazo #818CF8, Fondo #1E1B4B (15% opacidad) -->
             <Border Style="{StaticResource CyberCardStyle}" Margin="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0">
-                        <TextBlock Text="GPU" FontSize="12" FontWeight="Bold" Foreground="{StaticResource IndigoAccentBrush}" />
-                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="20" FontWeight="ExtraBold" Foreground="{StaticResource IndigoAccentBrush}">
-                            <Run Text="{Binding GpuLoadPercent, Mode=OneWay}" /><Run Text="%" />
+                        <TextBlock Text="TARJETA GRÁFICA (GPU)"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#818CF8"
+                                   VerticalAlignment="Center" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="#818CF8">
+                            <Run Text="{Binding GpuLoadPercent, Mode=OneWay, StringFormat={}{0:0.0}}" /><Run Text="%" />
                         </TextBlock>
                     </DockPanel>
 
                     <StackPanel Grid.Row="1" Margin="0,4,0,10">
-                        <TextBlock Text="{Binding GpuModel}" FontSize="15" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
-                            <Run Text="VRAM:" />
-                            <Run Text="{Binding GpuVramUsedMb, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding GpuModel}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="#F8FAFC"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontSize="12.5" Foreground="#94A3B8" Margin="0,4,0,0" TextTrimming="CharacterEllipsis">
+                            <Run Text="VRAM: " />
+                            <Run Text="{Binding GpuVramUsedMb, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" />
                             <Run Text="/" />
-                            <Run Text="{Binding GpuVramTotalMb, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <Run Text="MB   •   " />
-                            <Run Text="{Binding GpuTempCelsius, Mode=OneWay}" Foreground="{StaticResource IndigoAccentBrush}" FontWeight="Bold" />
-                            <Run Text="°C   •   Driver " />
-                            <Run Text="{Binding GpuDriverVersion, Mode=OneWay}" />
+                            <Run Text="{Binding GpuVramTotalMb, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" />
+                            <Run Text=" MB   •   Temp: " />
+                            <Run Text="{Binding GpuTempCelsius, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#818CF8" FontWeight="Bold" />
+                            <Run Text=" °C (" /><Run Text="{Binding GpuTempStatus, Mode=OneWay}" /><Run Text=")" />
                         </TextBlock>
                     </StackPanel>
 
-                    <lvc:CartesianChart Grid.Row="2"
-                                        Height="140"
-                                        VerticalAlignment="Bottom"
-                                        Series="{Binding GpuSeries}"
-                                        XAxes="{Binding HiddenXAxis}"
-                                        YAxes="{Binding PercentageYAxis}"
-                                        TooltipPosition="Hidden" />
+                    <controls:MicroGraphControl Grid.Row="2"
+                                                MinHeight="115"
+                                                Values="{Binding GpuHistory}"
+                                                MaxScale="100"
+                                                LineBrush="#818CF8"
+                                                FillBrush="#261E1B4B" />
+
+                    <Grid Grid.Row="3" Margin="2,10,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Left">
+                            <Run Text="Mín: " /><Run Text="{Binding GpuMinPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="1" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center">
+                            <Run Text="Prom: " /><Run Text="{Binding GpuAvgPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#818CF8" FontWeight="Bold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="2" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Right">
+                            <Run Text="Máx: " /><Run Text="{Binding GpuMaxPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- 3. RAM (Curva Azul #007AFF) -->
+            <!-- 3. MEMORIA (RAM) — Trazo #007AFF, Fondo #172554 (15% opacidad) -->
             <Border Style="{StaticResource CyberCardStyle}" Margin="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0">
-                        <TextBlock Text="RAM" FontSize="12" FontWeight="Bold" Foreground="{StaticResource ElectricBlueBrush}" />
-                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="20" FontWeight="ExtraBold" Foreground="{StaticResource ElectricBlueBrush}">
-                            <Run Text="{Binding RamUsagePercent, Mode=OneWay}" /><Run Text="%" />
+                        <TextBlock Text="MEMORIA (RAM)"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#007AFF"
+                                   VerticalAlignment="Center" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="#007AFF">
+                            <Run Text="{Binding RamUsagePercent, Mode=OneWay, StringFormat={}{0:0.0}}" /><Run Text="%" />
                         </TextBlock>
                     </DockPanel>
 
                     <StackPanel Grid.Row="1" Margin="0,4,0,10">
-                        <TextBlock FontSize="15" FontWeight="Bold">
-                            <Run Text="{Binding RamUsedGb, Mode=OneWay}" />
-                            <Run Text="GB /" />
-                            <Run Text="{Binding RamTotalGb, Mode=OneWay}" />
-                            <Run Text="GB" />
+                        <TextBlock FontSize="15" FontWeight="Bold" Foreground="#F8FAFC">
+                            <Run Text="{Binding RamUsedGb, Mode=OneWay, StringFormat={}{0:0.0}}" />
+                            <Run Text=" GB / " />
+                            <Run Text="{Binding RamTotalGb, Mode=OneWay, StringFormat={}{0:0.0}}" />
+                            <Run Text=" GB" />
                         </TextBlock>
-                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
-                            <Run Text="Frecuencia:" />
-                            <Run Text="{Binding RamSpeedMhz, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" />
-                            <Run Text="MHz" />
+                        <TextBlock FontSize="12.5" Foreground="#94A3B8" Margin="0,4,0,0">
+                            <Run Text="Frecuencia activa: " />
+                            <Run Text="{Binding RamSpeedMhz, Mode=OneWay}" Foreground="#F8FAFC" FontWeight="SemiBold" />
+                            <Run Text=" MHz   •   Dual-Channel" />
                         </TextBlock>
                     </StackPanel>
 
-                    <lvc:CartesianChart Grid.Row="2"
-                                        Height="140"
-                                        VerticalAlignment="Bottom"
-                                        Series="{Binding RamSeries}"
-                                        XAxes="{Binding HiddenXAxis}"
-                                        YAxes="{Binding PercentageYAxis}"
-                                        TooltipPosition="Hidden" />
+                    <controls:MicroGraphControl Grid.Row="2"
+                                                MinHeight="115"
+                                                Values="{Binding RamHistory}"
+                                                MaxScale="100"
+                                                LineBrush="#007AFF"
+                                                FillBrush="#26172554" />
+
+                    <Grid Grid.Row="3" Margin="2,10,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Left">
+                            <Run Text="Mín: " /><Run Text="{Binding RamMinPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="1" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center">
+                            <Run Text="Prom: " /><Run Text="{Binding RamAvgPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#007AFF" FontWeight="Bold" /><Run Text="%" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="2" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Right">
+                            <Run Text="Máx: " /><Run Text="{Binding RamMaxPercent, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text="%" />
+                        </TextBlock>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- 4. ALMACENAMIENTO (Curva Esmeralda #10B981) -->
+            <!-- 4. ALMACENAMIENTO (DISCO) — Trazo #10B981, Fondo #064E3B (15% opacidad) -->
             <Border Style="{StaticResource CyberCardStyle}" Margin="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0">
-                        <TextBlock Text="ALMACENAMIENTO" FontSize="12" FontWeight="Bold" Foreground="{StaticResource EmeraldAccentBrush}" />
-                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="20" FontWeight="ExtraBold" Foreground="{StaticResource EmeraldAccentBrush}">
-                            <Run Text="{Binding StorageTransferMbPerSec, Mode=OneWay}" /><Run Text=" MB/s" />
+                        <TextBlock Text="ALMACENAMIENTO (DISCO)"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#10B981"
+                                   VerticalAlignment="Center" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="#10B981">
+                            <Run Text="{Binding StorageTransferMbPerSec, Mode=OneWay, StringFormat={}{0:0.0}}" /><Run Text=" MB/s" />
                         </TextBlock>
                     </DockPanel>
 
                     <StackPanel Grid.Row="1" Margin="0,4,0,10">
-                        <TextBlock Text="{Binding StorageModel}" FontSize="15" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
-                            <Run Text="Disponible:" />
-                            <Run Text="{Binding StorageFreeSpaceGb, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" />
-                            <Run Text="GB de" />
-                            <Run Text="{Binding StorageTotalSpaceGb, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <Run Text="GB" />
+                        <TextBlock Text="{Binding StorageModel}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="#F8FAFC"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontSize="12.5" Foreground="#94A3B8" Margin="0,4,0,0">
+                            <Run Text="Disponible: " />
+                            <Run Text="{Binding StorageFreeSpaceGb, Mode=OneWay, StringFormat={}{0:0.0}}" Foreground="#F8FAFC" FontWeight="SemiBold" />
+                            <Run Text=" GB de " />
+                            <Run Text="{Binding StorageTotalSpaceGb, Mode=OneWay, StringFormat={}{0:0.0}}" Foreground="#F8FAFC" />
+                            <Run Text=" GB" />
                         </TextBlock>
                     </StackPanel>
 
-                    <lvc:CartesianChart Grid.Row="2"
-                                        Height="140"
-                                        VerticalAlignment="Bottom"
-                                        Series="{Binding StorageSeries}"
-                                        XAxes="{Binding HiddenXAxis}"
-                                        YAxes="{Binding ThroughputYAxis}"
-                                        TooltipPosition="Hidden" />
+                    <controls:MicroGraphControl Grid.Row="2"
+                                                MinHeight="115"
+                                                Values="{Binding StorageHistory}"
+                                                AutoScale="True"
+                                                MaxScale="100"
+                                                LineBrush="#10B981"
+                                                FillBrush="#26064E3B" />
+
+                    <Grid Grid.Row="3" Margin="2,10,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Left">
+                            <Run Text="Mín: " /><Run Text="{Binding StorageMinMbPerSec, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text=" MB/s" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="1" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center">
+                            <Run Text="Prom: " /><Run Text="{Binding StorageAvgMbPerSec, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#10B981" FontWeight="Bold" /><Run Text=" MB/s" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="2" FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Right">
+                            <Run Text="Máx: " /><Run Text="{Binding StorageMaxMbPerSec, Mode=OneWay, StringFormat={}{0:0}}" Foreground="#F8FAFC" FontWeight="SemiBold" /><Run Text=" MB/s" />
+                        </TextBlock>
+                    </Grid>
                 </Grid>
             </Border>
         </UniformGrid>

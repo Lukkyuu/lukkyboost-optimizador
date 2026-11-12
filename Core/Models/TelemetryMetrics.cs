@@ -1,6 +1,9 @@
 namespace LukkyBoost.App.Core.Models;
 
-public sealed record TelemetryMetrics(
+/// <summary>
+/// Snapshot inmutable de telemetría de hardware capturado en segundo plano.
+/// </summary>
+public sealed record HardwareSnapshot(
     string CpuModel,
     double CpuClockMhz,
     double CpuLoadPercent,
@@ -20,4 +23,3 @@ public sealed record TelemetryMetrics(
     double StorageTransferRateMbPerSec,
     double StorageFreeSpaceGb,
     double StorageTotalSpaceGb);
-

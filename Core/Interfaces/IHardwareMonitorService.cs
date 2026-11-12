@@ -4,11 +4,10 @@ namespace LukkyBoost.App.Core.Interfaces;
 
 public interface IHardwareMonitorService : IDisposable
 {
-    event EventHandler<TelemetryMetrics>? MetricsUpdated;
+    event Action<HardwareSnapshot>? OnTelemetryUpdated;
 
     Task InitializeSensorsAsync(CancellationToken cancellationToken = default);
-    Task<TelemetryMetrics> CaptureSnapshotAsync(CancellationToken cancellationToken = default);
+    Task<HardwareSnapshot> CaptureSnapshotAsync(CancellationToken cancellationToken = default);
     void StartPolling(TimeSpan interval);
     void StopPolling();
 }
-
