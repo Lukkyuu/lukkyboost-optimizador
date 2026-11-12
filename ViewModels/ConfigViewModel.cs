@@ -50,6 +50,21 @@ public sealed partial class ConfigViewModel : ObservableObject
     public IReadOnlyList<string> GetEnabledTweakIds() =>
         _allTweaks.Where(t => t.IsActive).Select(t => t.Id).ToList();
 
+    public async Task<int> ApplyAllSelectedTweaksAsync(CancellationToken ct = default)
+    {
+        int appliedCount = 0;
+        foreach (var item in _allTweaks.Where(t => t.IsActive))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (await _optimizerService.ApplyTweakByIdAsync(item.Id, true, ct).ConfigureAwait(false))
+            {
+                appliedCount++;
+            }
+        }
+
+        return appliedCount;
+    }
+
     public async Task ApplyImportedTweaksAsync(IEnumerable<string> enabledIds)
     {
         var set = new HashSet<string>(enabledIds, StringComparer.OrdinalIgnoreCase);

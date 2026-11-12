@@ -1,10 +1,12 @@
 using System.IO;
 using System.Text.Json;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LukkyBoost.App.Core.Enums;
 using LukkyBoost.App.Core.Interfaces;
 using LukkyBoost.App.Core.Models;
+using LukkyBoost.App.Services;
 using Microsoft.Win32;
 
 namespace LukkyBoost.App.ViewModels;
@@ -14,6 +16,7 @@ public sealed partial class MainViewModel : ObservableObject
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
 
     private readonly IProfileService _profileService;
+    private readonly IBackupService _backupService;
     private readonly PcDashboardViewModel _pcDashboardVm;
     private readonly ConfigViewModel _configVm;
     private readonly BackupViewModel _backupVm;
@@ -30,10 +33,20 @@ public sealed partial class MainViewModel : ObservableObject
     private PerformanceProfile _activeProfile = PerformanceProfile.Normal;
 
     [ObservableProperty]
-    private string _systemStatusText = "Sistema Listo";
+    private string _statusMessage = "Sistema Listo";
+
+    [ObservableProperty]
+    private string _statusColor = "#10B981";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotBusy))]
+    private bool _isBusy;
+
+    public bool IsNotBusy => !IsBusy;
 
     public MainViewModel(
         IProfileService profileService,
+        IBackupService backupService,
         PcDashboardViewModel pcDashboardVm,
         ConfigViewModel configVm,
         BackupViewModel backupVm,
@@ -41,6 +54,7 @@ public sealed partial class MainViewModel : ObservableObject
         ToolboxViewModel toolboxVm)
     {
         _profileService = profileService;
+        _backupService = backupService;
         _pcDashboardVm = pcDashboardVm;
         _configVm = configVm;
         _backupVm = backupVm;
@@ -52,14 +66,90 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     // -------------------------------------------------------------------------
-    // BOTONES GLOBALES DE ACCIÓN RÁPIDA (DESMARCAR TODO, IMPORTAR, EXPORTAR)
+    // BOTÓN DE CONFIRMACIÓN Y EJECUCIÓN EN LOTE ("⚡ Aplicar cambios")
+    // -------------------------------------------------------------------------
+
+    [RelayCommand]
+    private async Task ApplyAllChangesAsync()
+    {
+        // 1. Validación de ejecución concurrente
+        if (IsBusy)
+            return;
+
+        // 2. Diálogo modal de confirmación Sí/No
+        var confirmation = MessageBox.Show(
+            "¿Deseas aplicar todas las optimizaciones y cambios seleccionados?\n\nSe creará un Punto de Restauración del sistema automáticamente.",
+            "lukkyboost — Confirmar optimización",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirmation != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            // 3. Secuencia de aplicación en segundo plano
+            IsBusy = true;
+            StatusMessage = "Creando respaldo...";
+            StatusColor = "#F59E0B";
+
+            await Task.Run(async () =>
+            {
+                // Creación de Punto de Restauración vía WMI + respaldo JSON/REG
+                _ = SystemRestoreService.CreateRestorePoint("lukkyboost - Pre Optimization");
+                await _backupService.CreateSystemBackupAsync("Pre Optimization").ConfigureAwait(false);
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    StatusMessage = "Aplicando optimizaciones...";
+                });
+
+                // Ejecución en lote de todas las optimizaciones activas (Debloat, Privacidad, Telemetría, Rendimiento, Varios)
+                await _configVm.ApplyAllSelectedTweaksAsync().ConfigureAwait(false);
+                await _profileService.ApplyProfileAsync(ActiveProfile).ConfigureAwait(false);
+            });
+
+            StatusMessage = "Cambios aplicados con éxito";
+            StatusColor = "#10B981";
+
+            MessageBox.Show(
+                "Todas las optimizaciones seleccionadas y el respaldo del sistema se han aplicado correctamente.",
+                "lukkyboost — Optimización completada",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            // 4. Manejo de excepciones sin bloquear la UI
+            StatusMessage = "Error al aplicar";
+            StatusColor = "#EF4444";
+
+            MessageBox.Show(
+                $"Ocurrió un error durante la aplicación de cambios:\n{ex.Message}",
+                "lukkyboost — Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            // 5. Restauración automática de estado tras 4 segundos
+            await Task.Delay(4000);
+            StatusMessage = "Sistema Listo";
+            StatusColor = "#10B981";
+            IsBusy = false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // ACCIONES AUXILIARES (DESMARCAR TODO, IMPORTAR, EXPORTAR)
     // -------------------------------------------------------------------------
 
     [RelayCommand]
     private void UncheckAll()
     {
         _configVm.UncheckAllTweaks();
-        SystemStatusText = "Opciones desmarcadas";
+        StatusMessage = "Opciones desmarcadas";
+        StatusColor = "#10B981";
     }
 
     [RelayCommand]
@@ -82,11 +172,13 @@ public sealed partial class MainViewModel : ObservableObject
 
             string json = JsonSerializer.Serialize(payload, JsonOpts);
             await File.WriteAllTextAsync(dialog.FileName, json);
-            SystemStatusText = "Configuración exportada";
+            StatusMessage = "Configuración exportada";
+            StatusColor = "#10B981";
         }
         catch
         {
-            SystemStatusText = "Error al exportar JSON";
+            StatusMessage = "Error al exportar JSON";
+            StatusColor = "#EF4444";
         }
     }
 
@@ -119,11 +211,13 @@ public sealed partial class MainViewModel : ObservableObject
                 await _configVm.ApplyImportedTweaksAsync(payload.EnabledTweakIds);
             }
 
-            SystemStatusText = "Configuración importada";
+            StatusMessage = "Configuración importada";
+            StatusColor = "#10B981";
         }
         catch
         {
-            SystemStatusText = "Error al importar JSON";
+            StatusMessage = "Error al importar JSON";
+            StatusColor = "#EF4444";
         }
     }
 

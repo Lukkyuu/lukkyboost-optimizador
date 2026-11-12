@@ -34,7 +34,7 @@
                     <RowDefinition Height="Auto" />
                     <!-- Menú de navegación vertical (9 Vistas) -->
                     <RowDefinition Height="*" />
-                    <!-- Indicador de estado -->
+                    <!-- Botón de acción global ("⚡ Aplicar cambios") + Tarjeta de estado -->
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -96,25 +96,103 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- 3. Estado del Sistema -->
-                <Border Grid.Row="2"
-                        Background="{StaticResource DeepNavyBgBrush}"
-                        BorderBrush="{StaticResource CardBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="12,9"
-                        Margin="0,12,0,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{StaticResource EmeraldAccentBrush}"
-                                 Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding SystemStatusText}"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                </Border>
+                <!-- 3. Sección Inferior: Botón "⚡ Aplicar cambios" y Tarjeta "● Sistema Listo" -->
+                <StackPanel Grid.Row="2" Margin="-14,12,-14,0">
+                    <!-- Botón Principal "⚡ Aplicar cambios" -->
+                    <Button Height="46"
+                            Margin="14,0,14,10"
+                            Cursor="Hand"
+                            IsEnabled="{Binding IsNotBusy}"
+                            Command="{Binding ApplyAllChangesCommand}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Button.RenderTransform>
+                            <ScaleTransform ScaleX="1.0" ScaleY="1.0" />
+                        </Button.RenderTransform>
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="BtnBorder"
+                                        Background="#007AFF"
+                                        CornerRadius="10">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#38BDF8"
+                                                          BlurRadius="16"
+                                                          ShadowDepth="0"
+                                                          Opacity="0.45" />
+                                    </Border.Effect>
+
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="⚡"
+                                                   FontSize="13"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FFFFFF"
+                                                   Margin="0,0,7,0"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="Aplicar cambios"
+                                                   FontSize="13"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FFFFFF"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+                                    <!-- MouseOver: Fondo cian #38BDF8 y mayor resplandor -->
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="BtnBorder" Property="Background" Value="#38BDF8" />
+                                        <Setter TargetName="BtnBorder" Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#38BDF8"
+                                                                  BlurRadius="24"
+                                                                  ShadowDepth="0"
+                                                                  Opacity="0.80" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+
+                                    <!-- IsPressed: Compresión sutil a 0.97 y tono #0284C7 -->
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="BtnBorder" Property="Background" Value="#0284C7" />
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <ScaleTransform ScaleX="0.97" ScaleY="0.97" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+
+                                    <!-- Deshabilitado (IsEnabled="False"): Fondo #1E293B sin resplandor -->
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter TargetName="BtnBorder" Property="Background" Value="#1E293B" />
+                                        <Setter TargetName="BtnBorder" Property="Effect" Value="{x:Null}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Tarjeta de Estado Inferior ("● Sistema Listo") -->
+                    <Border Height="38"
+                            Margin="14,0,14,0"
+                            Background="#111827"
+                            BorderBrush="#1F293D"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{Binding StatusColor}"
+                                     Margin="0,0,8,0"
+                                     VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
 
