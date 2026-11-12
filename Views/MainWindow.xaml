@@ -1,0 +1,128 @@
+<Window x:Class="LukkyBoost.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LukkyBoost.App.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="lukkyboost"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Width="1360" Height="860"
+        MinWidth="1140" MinHeight="760"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource DeepNavyBgBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- =============================================================== -->
+        <!-- BARRA LATERAL IZQUIERDA FIJA (SIDEBAR)                          -->
+        <!-- =============================================================== -->
+        <Border Grid.Column="0"
+                Background="{StaticResource SurfaceCardBrush}"
+                BorderBrush="{StaticResource CardBorderBrush}"
+                BorderThickness="0,0,1,0"
+                Padding="16,22,16,18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Cabecera: Logotipo 38x38 + "lukkyboost" -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Menú de navegación vertical (9 Vistas) -->
+                    <RowDefinition Height="*" />
+                    <!-- Indicador de estado -->
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 1. Cabecera: Logotipo 38x38 px con HighQuality y resplandor cian + "lukkyboost" -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,22">
+                    <Image Source="pack://application:,,,/Assets/logo.png"
+                           Width="38" Height="38"
+                           Stretch="Uniform"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Effect="{StaticResource CyanGlowEffect}" />
+
+                    <TextBlock Text="lukkyboost"
+                               FontSize="22"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 2. Menú de Navegación Vertical (9 Vistas) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Button Content="💻   General"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateTelemetryDashboardCommand}" />
+
+                        <Button Content="🧹   Debloat"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateDebloatCommand}" />
+
+                        <Button Content="🛡️   Privacidad"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigatePrivacyCommand}" />
+
+                        <Button Content="📡   Telemetría"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateTelemetryControlCommand}" />
+
+                        <Button Content="🚀   Rendimiento"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigatePerformanceCommand}" />
+
+                        <Button Content="🎨   Varios"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateMiscCommand}" />
+
+                        <Button Content="📦   Explorar aplicaciones"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateExploreAppsCommand}" />
+
+                        <Button Content="🎮   Drivers"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateDriversCommand}" />
+
+                        <Button Content="💾   Copias de seguridad"
+                                Style="{StaticResource SidebarNavButtonStyle}"
+                                Command="{Binding NavigateBackupCommand}" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 3. Estado del Sistema -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource DeepNavyBgBrush}"
+                        BorderBrush="{StaticResource CardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,9"
+                        Margin="0,12,0,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="8" Height="8"
+                                 Fill="{StaticResource EmeraldAccentBrush}"
+                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding SystemStatusText}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- =============================================================== -->
+        <!-- CONTENEDOR PRINCIPAL DE VISTAS                                  -->
+        <!-- =============================================================== -->
+        <Border Grid.Column="1" Padding="24">
+            <ContentControl Content="{Binding CurrentViewModel}" />
+        </Border>
+    </Grid>
+</Window>

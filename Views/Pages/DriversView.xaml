@@ -1,0 +1,325 @@
+<UserControl x:Class="LukkyBoost.App.Views.Pages.DriversView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LukkyBoost.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:DriversViewModel}"
+             d:DesignWidth="1000" d:DesignHeight="760">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Encabezado y Detección de GPU Activa -->
+            <RowDefinition Height="Auto" />
+            <!-- Tarjetas de Purga de Shaders y Utilidades de Subsistema Gráfico -->
+            <RowDefinition Height="*" />
+            <!-- Barra de Estado de Operación -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- =============================================================== -->
+        <!-- 1. TARJETA SUPERIOR: GPU DETECTADA Y VERSIÓN DE CONTROLADOR     -->
+        <!-- =============================================================== -->
+        <Border Grid.Row="0" Style="{StaticResource CyberCardStyle}" Margin="0,0,0,18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
+                        <Border Background="#162033"
+                                BorderBrush="{StaticResource ElectricCyanBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="10,3"
+                                Margin="0,0,10,0">
+                            <TextBlock Text="{Binding GpuVendor}"
+                                       FontSize="11.5"
+                                       FontWeight="ExtraBold"
+                                       Foreground="{StaticResource ElectricCyanBrush}" />
+                        </Border>
+                        <TextBlock Text="CONTROLADOR GRÁFICO Y SUBSISTEMA DE SHADERS"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding GpuModelName}"
+                               FontSize="22"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,2,0,6" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,22,0">
+                            <Run Text="Versión Instalada:" />
+                            <Run Text="{Binding InstalledDriverVersion}"
+                                 Foreground="{StaticResource ElectricCyanBrush}"
+                                 FontWeight="Bold" />
+                        </TextBlock>
+                        <TextBlock FontSize="13" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Build WMI:" />
+                            <Run Text="{Binding WmiRawVersion}"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 FontWeight="SemiBold" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="🔄 Re-escanear GPU"
+                            Style="{StaticResource SidebarNavButtonStyle}"
+                            BorderBrush="{StaticResource CardBorderBrush}"
+                            Margin="0,0,10,0"
+                            Command="{Binding RefreshGpuDataCommand}" />
+
+                    <Button Content="🌐 Descargar Driver Oficial Limpio"
+                            Style="{StaticResource CyberActionButtonStyle}"
+                            Command="{Binding OpenVendorDriverUrlCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- =============================================================== -->
+        <!-- 2. CUADRÍCULA 2x2: SHADERS NVIDIA, AMD/D3D, RESET HOT Y WU      -->
+        <!-- =============================================================== -->
+        <UniformGrid Grid.Row="1" Columns="2" Rows="2" Margin="-8">
+
+            <!-- Tarjeta A: Purga de Shaders NVIDIA (DXCache & GLCache) -->
+            <Border Style="{StaticResource CyberCardStyle}" Margin="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="CACHÉ DE SHADERS NVIDIA"
+                                   FontSize="11.5"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource ElectricCyanBrush}" />
+                        <TextBlock Text="Purga de DXCache, GLCache y NV_Cache"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Margin="0,4,0,8" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Text="Elimina binarios precompilados corruptos tras actualizar el driver o parches de juegos para erradicar el stuttering de compilación."
+                                   TextWrapping="Wrap"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,14" />
+
+                        <Border Background="{StaticResource DeepNavyBgBrush}"
+                                BorderBrush="{StaticResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8">
+                            <DockPanel>
+                                <TextBlock Text="Espacio ocupado en disco:"
+                                           FontSize="12.5"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock DockPanel.Dock="Right"
+                                           HorizontalAlignment="Right"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource ElectricCyanBrush}">
+                                    <Run Text="{Binding NvidiaShaderCacheMb, Mode=OneWay}" />
+                                    <Run Text="MB" />
+                                </TextBlock>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Button Grid.Row="2"
+                            Content="🧹 Purgar Caché NVIDIA (DXCache / GLCache)"
+                            Style="{StaticResource CyberActionButtonStyle}"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding PurgeNvidiaShadersCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- Tarjeta B: Purga de Shaders AMD & DirectX (D3DSCache) -->
+            <Border Style="{StaticResource CyberCardStyle}" Margin="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="CACHÉ DE SHADERS AMD &amp; DIRECTX 12"
+                                   FontSize="11.5"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource IndigoAccentBrush}" />
+                        <TextBlock Text="Purga de D3DSCache, AMD DxCache y VkCache"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Margin="0,4,0,8" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Text="Limpia la caché global de Direct3D 11/12 y Vulkan ignorando de forma segura cualquier shader actualmente bloqueado por DWM."
+                                   TextWrapping="Wrap"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,14" />
+
+                        <Border Background="{StaticResource DeepNavyBgBrush}"
+                                BorderBrush="{StaticResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8">
+                            <DockPanel>
+                                <TextBlock Text="Espacio ocupado en disco:"
+                                           FontSize="12.5"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock DockPanel.Dock="Right"
+                                           HorizontalAlignment="Right"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource IndigoAccentBrush}">
+                                    <Run Text="{Binding AmdAndD3DShaderCacheMb, Mode=OneWay}" />
+                                    <Run Text="MB" />
+                                </TextBlock>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <UniformGrid Grid.Row="2" Columns="2">
+                        <Button Content="🧹 Purgar D3DSCache / AMD"
+                                Style="{StaticResource CyberActionButtonStyle}"
+                                Margin="0,0,5,0"
+                                Command="{Binding PurgeAmdAndD3DShadersCommand}" />
+                        <Button Content="🔥 Purgar Todas"
+                                Style="{StaticResource CyberActionButtonStyle}"
+                                Margin="5,0,0,0"
+                                Command="{Binding PurgeAllShadersCommand}" />
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Tarjeta C: Reinicio del Subsistema Gráfico en Caliente (Win + Ctrl + Shift + B) -->
+            <Border Style="{StaticResource CyberCardStyle}" Margin="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="RECUPERACIÓN DE SUBSISTEMA DE VIDEO"
+                                   FontSize="11.5"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource EmeraldAccentBrush}" />
+                        <TextBlock Text="Reinicio de Driver en Caliente (Hot Reset)"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Margin="0,4,0,8" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="1"
+                               Text="Invoca programáticamente la combinación de kernel Win + Ctrl + Shift + B mediante la API nativa Win32 SendInput. Vacía el framebuffer de Desktop Window Manager (DWM) y reinicia el driver de pantalla sin cerrar tus juegos ni aplicaciones abiertas."
+                               TextWrapping="Wrap"
+                               FontSize="12.5"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+
+                    <Button Grid.Row="2"
+                            Content="⚡ Reiniciar Subsistema de Video (Win + Ctrl + Shift + B)"
+                            Style="{StaticResource CyberActionButtonStyle}"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding RestartVideoSubsystemCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- Tarjeta D: Protección contra Sobrescritura de Drivers por Windows Update -->
+            <Border Style="{StaticResource CyberCardStyle}" Margin="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="PROTECCIÓN DE INSTALACIÓN LIMPIA (DDU / NVCLEANSTALL)"
+                                   FontSize="11.5"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource ElectricCyanBrush}" />
+                        <TextBlock Text="Bloqueo de Drivers Automáticos de Windows Update"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Margin="0,4,0,8" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Text="Impide que Windows Update reemplace silenciosamente tu driver de baja latencia por una versión OEM antigua mientras realizas una instalación limpia con DDU."
+                                   TextWrapping="Wrap"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,14" />
+
+                        <Border Background="{StaticResource DeepNavyBgBrush}"
+                                BorderBrush="{StaticResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8">
+                            <DockPanel>
+                                <TextBlock Text="Drivers automáticos WU bloqueados:"
+                                           FontSize="12.5"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock DockPanel.Dock="Right"
+                                           HorizontalAlignment="Right"
+                                           Text="{Binding WindowsUpdateDriverBlocked}"
+                                           FontSize="13.5"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource ElectricCyanBrush}" />
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Button Grid.Row="2"
+                            Content="🛡️ Alternar Bloqueo de Drivers de Windows Update"
+                            Style="{StaticResource CyberActionButtonStyle}"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding ToggleWuDriverBlockCommand}" />
+                </Grid>
+            </Border>
+        </UniformGrid>
+
+        <!-- =============================================================== -->
+        <!-- 3. BARRA INFERIOR DE ESTADO DE OPERACIÓN                        -->
+        <!-- =============================================================== -->
+        <Border Grid.Row="2"
+                Style="{StaticResource CyberCardStyle}"
+                Padding="16,12"
+                Margin="0,18,0,0">
+            <DockPanel>
+                <TextBlock Text="ESTADO:"
+                           FontSize="11.5"
+                           FontWeight="ExtraBold"
+                           Foreground="{StaticResource ElectricCyanBrush}"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="{Binding OperationStatusMessage}"
+                           FontSize="12.5"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
+

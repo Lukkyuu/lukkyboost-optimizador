@@ -1,0 +1,231 @@
+<Application x:Class="LukkyBoost.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LukkyBoost.App.ViewModels"
+             xmlns:pages="clr-namespace:LukkyBoost.App.Views.Pages">
+    <Application.Resources>
+        <!-- =============================================================== -->
+        <!-- PALETA DEEP CYBER NAVY                                          -->
+        <!-- =============================================================== -->
+        <Color x:Key="DeepNavyBgColor">#0A0F1D</Color>
+        <Color x:Key="SurfaceCardColor">#111827</Color>
+        <Color x:Key="CardBorderColor">#1F293D</Color>
+        <Color x:Key="ElectricCyanColor">#38BDF8</Color>
+        <Color x:Key="ElectricBlueColor">#007AFF</Color>
+        <Color x:Key="IndigoAccentColor">#6366F1</Color>
+        <Color x:Key="EmeraldAccentColor">#10B981</Color>
+        <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
+        <Color x:Key="TextSecondaryColor">#94A3B8</Color>
+
+        <SolidColorBrush x:Key="DeepNavyBgBrush" Color="{StaticResource DeepNavyBgColor}" />
+        <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource SurfaceCardColor}" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="{StaticResource CardBorderColor}" />
+        <SolidColorBrush x:Key="ElectricCyanBrush" Color="{StaticResource ElectricCyanColor}" />
+        <SolidColorBrush x:Key="ElectricBlueBrush" Color="{StaticResource ElectricBlueColor}" />
+        <SolidColorBrush x:Key="IndigoAccentBrush" Color="{StaticResource IndigoAccentColor}" />
+        <SolidColorBrush x:Key="EmeraldAccentBrush" Color="{StaticResource EmeraldAccentColor}" />
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+
+        <DropShadowEffect x:Key="CyanGlowEffect"
+                          Color="#38BDF8"
+                          BlurRadius="20"
+                          ShadowDepth="0"
+                          Opacity="0.55" />
+
+        <!-- Tarjeta Deep Cyber Navy (CornerRadius="12", Borde 1px #1F293D) -->
+        <Style x:Key="CyberCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="18" />
+        </Style>
+
+        <!-- Botón de Navegación del Sidebar -->
+        <Style x:Key="SidebarNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="NavBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background" Value="#162033" />
+                                <Setter TargetName="NavBorder" Property="BorderBrush" Value="#38BDF8" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botón de Acción Principal -->
+        <Style x:Key="CyberActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ElectricBlueBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ElectricCyanBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="#0062CC" />
+                                <Setter TargetName="BtnBorder" Property="Effect" Value="{StaticResource CyanGlowEffect}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="#1E293B" />
+                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="#334155" />
+                                <Setter Property="Foreground" Value="#64748B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- RadioButton Tipo Tarjeta Interactiva Grande (MinHeight="56") para Perfiles -->
+        <Style x:Key="ProfileCardRadioStyle" TargetType="RadioButton">
+            <Setter Property="MinHeight" Value="62" />
+            <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="6,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="CardRoot"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12"
+                                Padding="16,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" VerticalAlignment="Center" />
+                                <Ellipse x:Name="ActiveDot"
+                                         Grid.Column="1"
+                                         Width="10" Height="10"
+                                         Fill="#1F293D"
+                                         VerticalAlignment="Center"
+                                         Margin="10,0,0,0" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardRoot" Property="Background" Value="#172135" />
+                                <Setter TargetName="CardRoot" Property="BorderBrush" Value="#38BDF8" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CardRoot" Property="Background" Value="#15233B" />
+                                <Setter TargetName="CardRoot" Property="BorderBrush" Value="#38BDF8" />
+                                <Setter TargetName="CardRoot" Property="BorderThickness" Value="1.5" />
+                                <Setter TargetName="CardRoot" Property="Effect" Value="{StaticResource CyanGlowEffect}" />
+                                <Setter TargetName="ActiveDot" Property="Fill" Value="#38BDF8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ToggleSwitch Moderno para Optimizaciones Reversibles -->
+        <Style x:Key="CyberToggleSwitchStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Grid.Column="0"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0" />
+                            <Border x:Name="SwitchTrack"
+                                    Grid.Column="1"
+                                    Width="44" Height="24"
+                                    CornerRadius="12"
+                                    Background="#0A0F1D"
+                                    BorderBrush="#1F293D"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <Ellipse x:Name="SwitchThumb"
+                                         Width="16" Height="16"
+                                         Fill="#94A3B8"
+                                         HorizontalAlignment="Left"
+                                         Margin="3,0,0,0" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="#007AFF" />
+                                <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#38BDF8" />
+                                <Setter TargetName="SwitchThumb" Property="Fill" Value="#F8FAFC" />
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,3,0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DataTemplates MVVM -->
+        <DataTemplate DataType="{x:Type vm:PcDashboardViewModel}">
+            <pages:PcDashboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ConfigViewModel}">
+            <pages:ConfigView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BackupViewModel}">
+            <pages:BackupView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DriversViewModel}">
+            <pages:DriversView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ToolboxViewModel}">
+            <pages:ToolboxView />
+        </DataTemplate>
+    </Application.Resources>
+</Application>

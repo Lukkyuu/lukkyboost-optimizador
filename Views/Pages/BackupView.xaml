@@ -1,0 +1,81 @@
+<UserControl x:Class="LukkyBoost.App.Views.Pages.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LukkyBoost.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:BackupViewModel}"
+             d:DesignWidth="1000" d:DesignHeight="760">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="COPIAS DE SEGURIDAD Y PUNTOS DE RESTAURACIÓN"
+                       FontSize="18" FontWeight="ExtraBold" Foreground="{StaticResource TextPrimaryBrush}" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource CyberCardStyle}" Margin="0,0,0,16">
+            <DockPanel>
+                <TextBox Width="420"
+                         Text="{Binding BackupDescription, UpdateSourceTrigger=PropertyChanged}"
+                         Background="{StaticResource DeepNavyBgBrush}"
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         BorderBrush="{StaticResource CardBorderBrush}"
+                         Padding="10,8"
+                         VerticalContentAlignment="Center" />
+                <Button DockPanel.Dock="Right"
+                        HorizontalAlignment="Right"
+                        Content="🛡️ Crear Punto de Restauración y Snapshot (1-Clic)"
+                        Style="{StaticResource CyberActionButtonStyle}"
+                        Command="{Binding CreateBackupNowCommand}" />
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource CyberCardStyle}">
+            <ListView ItemsSource="{Binding Snapshots}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      Foreground="{StaticResource TextPrimaryBrush}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{StaticResource DeepNavyBgBrush}"
+                                BorderBrush="{StaticResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="14,10"
+                                Margin="0,4">
+                            <Grid Width="920">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="210" />
+                                    <ColumnDefinition Width="165" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="210" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Id}" FontWeight="Bold" Foreground="{StaticResource ElectricCyanBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding FormattedDate}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{Binding Description}" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                <Button Grid.Column="3"
+                                        Content="⏪ Restaurar Estado Previo"
+                                        Style="{StaticResource CyberActionButtonStyle}"
+                                        Command="{Binding DataContext.RestoreSnapshotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
+        <Border Grid.Row="3" Style="{StaticResource CyberCardStyle}" Padding="14,10" Margin="0,16,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="12.5" Foreground="{StaticResource ElectricCyanBrush}" />
+        </Border>
+    </Grid>
+</UserControl>
+
