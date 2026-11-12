@@ -269,3 +269,4 @@ public sealed class MicroGraphControl : Border
         line.Y2 = y;
     }
 }
+
