@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # lukkyboost — Lanzador Rápido desde GitHub (CMD / PowerShell)
 # Repositorio: https://github.com/Lukkyuu/lukkyboost-optimizador
 # ==============================================================================
@@ -82,3 +82,4 @@ if (Test-Path $exePath) {
 } else {
     Write-Host "[ERROR] No se pudo descargar lukkyboost.exe desde el repositorio." -ForegroundColor Red
 }
+
