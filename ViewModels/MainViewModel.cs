@@ -7,6 +7,7 @@ using LukkyBoost.App.Core.Enums;
 using LukkyBoost.App.Core.Interfaces;
 using LukkyBoost.App.Core.Models;
 using LukkyBoost.App.Services;
+using LukkyBoost.App.Views;
 using Microsoft.Win32;
 
 namespace LukkyBoost.App.ViewModels;
@@ -88,26 +89,57 @@ public sealed partial class MainViewModel : ObservableObject
 
         try
         {
-            // 3. Secuencia de aplicación en segundo plano
+            // 3. Secuencia de aplicación en segundo plano con ventana modal de progreso
             IsBusy = true;
             StatusMessage = "Creando respaldo...";
             StatusColor = "#F59E0B";
 
-            await Task.Run(async () =>
-            {
-                // Creación de Punto de Restauración vía WMI + respaldo JSON/REG
-                _ = SystemRestoreService.CreateRestorePoint("lukkyboost - Pre Optimization");
-                await _backupService.CreateSystemBackupAsync("Pre Optimization").ConfigureAwait(false);
-
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+            await ProgressModalWindow.ExecuteAsync(
+                "Aplicando Optimizaciones",
+                async progress =>
                 {
-                    StatusMessage = "Aplicando optimizaciones...";
-                });
+                    await Task.Run(async () =>
+                    {
+                        progress.Report(new ProgressReport
+                        {
+                            Percentage = 10,
+                            StepMessage = "Creando punto de restauración vía WMI...",
+                            CompletedLog = "✔ Verificación de privilegios UAC completada"
+                        });
 
-                // Ejecución en lote de todas las optimizaciones activas (Debloat, Privacidad, Telemetría, Rendimiento, Varios)
-                await _configVm.ApplyAllSelectedTweaksAsync().ConfigureAwait(false);
-                await _profileService.ApplyProfileAsync(ActiveProfile).ConfigureAwait(false);
-            });
+                        _ = SystemRestoreService.CreateRestorePoint("lukkyboost - Pre Optimization");
+                        await _backupService.CreateSystemBackupAsync("Pre Optimization", progress).ConfigureAwait(false);
+
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            StatusMessage = "Aplicando optimizaciones...";
+                        });
+
+                        progress.Report(new ProgressReport
+                        {
+                            Percentage = 40,
+                            StepMessage = "Ejecutando lote de optimizaciones seleccionadas...",
+                            CompletedLog = "✔ Punto de restauración y respaldo de registro completados"
+                        });
+
+                        await _configVm.ApplyAllSelectedTweaksAsync(progress, startPercent: 40, endPercent: 88).ConfigureAwait(false);
+
+                        progress.Report(new ProgressReport
+                        {
+                            Percentage = 92,
+                            StepMessage = $"Aplicando perfil de energía y red ({ActiveProfile})..."
+                        });
+
+                        await _profileService.ApplyProfileAsync(ActiveProfile).ConfigureAwait(false);
+
+                        progress.Report(new ProgressReport
+                        {
+                            Percentage = 100,
+                            StepMessage = "Optimizaciones aplicadas con éxito.",
+                            CompletedLog = $"✔ Perfil '{ActiveProfile}' y optimizaciones sincronizados"
+                        });
+                    });
+                });
 
             StatusMessage = "Cambios aplicados con éxito";
             StatusColor = "#10B981";

@@ -50,15 +50,46 @@ public sealed partial class ConfigViewModel : ObservableObject
     public IReadOnlyList<string> GetEnabledTweakIds() =>
         _allTweaks.Where(t => t.IsActive).Select(t => t.Id).ToList();
 
-    public async Task<int> ApplyAllSelectedTweaksAsync(CancellationToken ct = default)
+    public async Task<int> ApplyAllSelectedTweaksAsync(
+        IProgress<ProgressReport>? progress = null,
+        double startPercent = 35,
+        double endPercent = 90,
+        CancellationToken ct = default)
     {
+        var activeItems = _allTweaks.Where(t => t.IsActive).ToList();
+        if (activeItems.Count == 0)
+        {
+            progress?.Report(new ProgressReport
+            {
+                Percentage = endPercent,
+                StepMessage = "Verificando configuración activa...",
+                CompletedLog = "✔ Sin cambios adicionales pendientes en módulos"
+            });
+            return 0;
+        }
+
         int appliedCount = 0;
-        foreach (var item in _allTweaks.Where(t => t.IsActive))
+        for (int i = 0; i < activeItems.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
+            var item = activeItems[i];
+            double pct = startPercent + ((i + 1.0) / activeItems.Count) * (endPercent - startPercent);
+
+            progress?.Report(new ProgressReport
+            {
+                Percentage = pct,
+                StepMessage = $"{item.Title}..."
+            });
+
             if (await _optimizerService.ApplyTweakByIdAsync(item.Id, true, ct).ConfigureAwait(false))
             {
                 appliedCount++;
+                progress?.Report(new ProgressReport
+                {
+                    Percentage = pct,
+                    StepMessage = $"{item.Title}...",
+                    CompletedLog = $"✔ {item.Title}"
+                });
             }
         }
 

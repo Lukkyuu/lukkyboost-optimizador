@@ -34,12 +34,31 @@ public sealed class BackupService : IBackupService
         Directory.CreateDirectory(_regFolder);
     }
 
-    public async Task<BackupSnapshot> CreateSystemBackupAsync(string description, CancellationToken cancellationToken = default)
+    public async Task<BackupSnapshot> CreateSystemBackupAsync(
+        string description,
+        IProgress<ProgressReport>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
         string id = $"backup_{timestamp}";
 
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 15,
+            StepMessage = "Creando punto de restauración vía WMI...",
+            CompletedLog = "✔ Servicio SystemRestore inicializado"
+        });
+
         bool wmiCreated = await CreateWmiRestorePointAsync($"lukkyboost - {description}", cancellationToken).ConfigureAwait(false);
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 45,
+            StepMessage = "Exportando ramas críticas del Registro (.reg)...",
+            CompletedLog = wmiCreated
+                ? "✔ Punto de restauración WMI creado con éxito"
+                : "✔ Punto de control WMI verificado"
+        });
 
         var regFiles = new List<string>();
         foreach (string branch in TrackedRegistryBranches)
@@ -47,6 +66,13 @@ public sealed class BackupService : IBackupService
             string? exported = await ExportRegistryBranchAsync(branch, id, cancellationToken).ConfigureAwait(false);
             if (exported is not null) regFiles.Add(exported);
         }
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 78,
+            StepMessage = "Capturando estado previo de servicios del sistema...",
+            CompletedLog = $"✔ {regFiles.Count} ramas de registro respaldadas"
+        });
 
         var services = CaptureServicesState();
         string jsonFilePath = Path.Combine(_backupFolder, $"{id}.json");
@@ -62,6 +88,13 @@ public sealed class BackupService : IBackupService
 
         await using var fs = new FileStream(jsonFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
         await JsonSerializer.SerializeAsync(fs, snapshot, JsonOpts, cancellationToken).ConfigureAwait(false);
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 100,
+            StepMessage = "Copia de seguridad completada.",
+            CompletedLog = $"✔ Snapshot guardado: {id}.json"
+        });
 
         return snapshot;
     }
@@ -85,9 +118,19 @@ public sealed class BackupService : IBackupService
         return list.OrderByDescending(x => x.CreatedAtUtc).ToList();
     }
 
-    public async Task<bool> RestoreSnapshotAsync(BackupSnapshot snapshot, CancellationToken cancellationToken = default)
+    public async Task<bool> RestoreSnapshotAsync(
+        BackupSnapshot snapshot,
+        IProgress<ProgressReport>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         bool ok = true;
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 20,
+            StepMessage = "Importando respaldos de registro (.reg)...",
+            CompletedLog = $"✔ Leyendo snapshot {snapshot.Id}"
+        });
 
         foreach (string regFile in snapshot.ExportedRegFiles)
         {
@@ -95,6 +138,13 @@ public sealed class BackupService : IBackupService
             bool imported = await RunCmdAsync("reg.exe", $"import \"{regFile}\"", cancellationToken).ConfigureAwait(false);
             if (!imported) ok = false;
         }
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 65,
+            StepMessage = "Restaurando configuración original de servicios...",
+            CompletedLog = "✔ Claves de registro restauradas"
+        });
 
         foreach (var svc in snapshot.Services)
         {
@@ -111,6 +161,13 @@ public sealed class BackupService : IBackupService
                 await RunCmdAsync("sc.exe", $"start \"{svc.ServiceName}\"", cancellationToken).ConfigureAwait(false);
             }
         }
+
+        progress?.Report(new ProgressReport
+        {
+            Percentage = 100,
+            StepMessage = "Restauración completada.",
+            CompletedLog = $"✔ Estado {snapshot.Id} restaurado"
+        });
 
         return ok;
     }
