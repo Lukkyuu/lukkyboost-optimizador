@@ -6,3 +6,4 @@ public class ProgressReport
     public string StepMessage { get; set; } = string.Empty;
     public string? CompletedLog { get; set; }
 }
+
