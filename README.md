@@ -11,6 +11,22 @@
 
 ---
 
+## 🚀 Ejecución Rápida (1 Comando desde GitHub)
+
+Puedes abrir **CMD (Símbolo del sistema)**, **PowerShell** o la ventana **Ejecutar (`Win + R`)** y pegar cualquiera de los siguientes comandos para descargar e iniciar **lukkyboost** automáticamente con privilegios de Administrador:
+
+### Opción A — Desde CMD (Símbolo del sistema) o `Win + R`
+```cmd
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Lukkyuu/lukkyboost-optimizador/main/run.ps1 | iex"
+```
+
+### Opción B — Desde PowerShell (Terminal de Windows)
+```powershell
+irm https://raw.githubusercontent.com/Lukkyuu/lukkyboost-optimizador/main/run.ps1 | iex
+```
+
+---
+
 ## ⚡ Descripción General
 
 **lukkyboost** es una herramienta de escritorio nativa desarrollada en **C# / .NET 8 (WPF)** bajo una estética **Deep Cyber Navy** (`#0A0F1D` / `#111827` / `#38BDF8`), diseñada para maximizar el rendimiento del sistema operativo, reducir la latencia de red y entrada (*input lag*), eliminar componentes innecesarios (*bloatware*) y monitorear sensores de hardware en tiempo real sin comprometer la estabilidad del sistema.
@@ -79,20 +95,8 @@
 ## 🛠️ Requisitos Técnicos
 
 - **Sistema Operativo:** Windows 10 (19041+) o Windows 11 (64 bits).
-- **Permisos:** Ejecución como **Administrador** (forzado automáticamente mediante `app.manifest`).
-- **SDK (solo para compilar desde código fuente):** [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
-
----
-
-## 📦 Compilar Ejecutable Único Portable (`.exe`)
-
-Para generar un único archivo `lukkyboost.exe` autocontenido (que no requiere tener .NET instalado en otras PCs):
-
-```powershell
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o ./publish
-```
-
-El ejecutable final quedará listo en `./publish/lukkyboost.exe`.
+- **Permisos:** Ejecución como **Administrador** (forzado automáticamente mediante `app.manifest` y `run.ps1`).
+- **Runtime:** [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (el script `run.ps1` lo verifica e instala automáticamente vía `winget` si no está presente).
 
 ---
 
@@ -106,10 +110,11 @@ lukkyboost/
 │   ├── Interfaces/          # Contratos de servicios para Inyección de Dependencias
 │   ├── Models/              # Modelos inmutables y observables (TweakToggleItem, TelemetryMetrics, etc.)
 │   └── Win32/               # P/Invoke nativo (user32.dll SendInput para reinicio de driver de video)
+├── dist/                    # Paquete distribuible ligero (lukkyboost.zip) para ejecución directa vía run.ps1
 ├── Services/                # Lógica de bajo nivel (WMI, Registro, Servicios, Winget, Sensores, Backups)
 ├── ViewModels/              # Lógica de presentación MVVM (CommunityToolkit.Mvvm)
 ├── Views/                   # Ventanas WPF (SplashScreenView, MainWindow) y páginas modulares
 ├── app.manifest             # Manifiesto UAC (requireAdministrator)
+├── run.ps1                  # Script lanzador remoto en 1 línea para CMD y PowerShell
 └── lukkyboost.csproj        # Configuración de compilación .NET 8 WPF x64
 ```
-
