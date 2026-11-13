@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -11,6 +11,10 @@
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <RootNamespace>LukkyBoost.App</RootNamespace>
     <AssemblyName>lukkyboost</AssemblyName>
+    <Version>1.1.0</Version>
+    <Product>lukkyboost</Product>
+    <Company>Lukkyuu</Company>
+    <Description>Suite de optimizacion y telemetria para Windows 10 y 11</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="System.Management" Version="8.0.0" />
@@ -29,4 +31,3 @@
   </ItemGroup>
 
 </Project>
-

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.0.0.0" name="LukkyBoost.App"/>
+  <assemblyIdentity version="1.1.0.0" name="LukkyBoost.App"/>
 
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-        <!-- Obligatorio para telemetría Ring0 (LibreHardwareMonitor), WMI SystemRestore y modificación de Servicios/Registro -->
-        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+        <!-- Eleva a Administrador cuando está disponible sin bloquear el arranque si UAC es restringido -->
+        <requestedExecutionLevel level="highestAvailable" uiAccess="false" />
       </requestedPrivileges>
     </security>
   </trustInfo>
@@ -18,4 +18,3 @@
     </application>
   </compatibility>
 </assembly>
-
